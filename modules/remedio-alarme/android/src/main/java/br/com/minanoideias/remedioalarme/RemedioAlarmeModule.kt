@@ -9,6 +9,7 @@ import android.provider.Settings
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import org.json.JSONObject
 
 /** Ponte JS <-> alarme nativo do remédio. Sem rede, sem segredos: tudo fica no próprio celular. */
 class RemedioAlarmeModule : Module() {
@@ -54,6 +55,44 @@ class RemedioAlarmeModule : Module() {
         }
         true
       } else false
+    }
+
+    /**
+     * Tudo o que pode impedir o alarme de acender a tela (JSON):
+     * telaCheia (Android 14+: acesso especial "intents em tela cheia"), notificacoes (app),
+     * canal (importância do canal do alarme; -1 = desconhecida), canalBaixo (usuário baixou/desligou o canal),
+     * naoPerturbe (filtro de interrupção diferente de "todos"; 0 = desconhecido), naoPerturbeLigado.
+     */
+    Function("statusPermissoes") {
+      val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      Avisos.canais(ctx) // garante que o canal existe (não desfaz o que o usuário mudou)
+      val telaCheia = if (Build.VERSION.SDK_INT < 34) true else nm.canUseFullScreenIntent()
+      var canal = -1
+      if (Build.VERSION.SDK_INT >= 26) nm.getNotificationChannel(Avisos.CANAL)?.let { canal = it.importance }
+      val filtro = nm.currentInterruptionFilter
+      JSONObject()
+        .put("telaCheia", telaCheia)
+        .put("notificacoes", nm.areNotificationsEnabled())
+        .put("canal", canal)
+        .put("canalBaixo", canal in 0 until NotificationManager.IMPORTANCE_HIGH)
+        .put("naoPerturbe", filtro)
+        .put("naoPerturbeLigado", filtro != NotificationManager.INTERRUPTION_FILTER_ALL && filtro != NotificationManager.INTERRUPTION_FILTER_UNKNOWN)
+        .toString()
+    }
+
+    /** Abre os ajustes do canal "Alarme do remédio" (importância, tela de bloqueio, pop-up). */
+    Function("abrirCanal") {
+      val pkg = ctx.packageName
+      val i = if (Build.VERSION.SDK_INT >= 26) {
+        Avisos.canais(ctx)
+        Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+          .putExtra(Settings.EXTRA_APP_PACKAGE, pkg)
+          .putExtra(Settings.EXTRA_CHANNEL_ID, Avisos.CANAL)
+      } else Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg"))
+      try { ctx.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) {
+        ctx.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+      }
+      true
     }
   }
 }

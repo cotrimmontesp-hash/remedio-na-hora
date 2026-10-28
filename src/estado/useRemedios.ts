@@ -6,7 +6,7 @@ import { aplicarEventos, arrumarHorarios, chaveDose, dosesDoDia, novoId, podarTo
 import * as Alarme from '../lembretes/alarme';
 import type { Dados, DoseTocando, Remedio, Soneca } from '../tipos';
 
-export interface Permissoes { notificacoes: boolean; exato: boolean; telaCheia: boolean }
+export interface Permissoes { notificacoes: boolean; exato: boolean; telaCheia: boolean; canalBaixo: boolean; naoPerturbe: boolean }
 
 export function useRemedios() {
   const [dados, setDados] = useState<Dados>(VAZIO);
@@ -15,7 +15,7 @@ export function useRemedios() {
   const [tocando, setTocando] = useState<DoseTocando[]>([]);
   const [sonecas, setSonecas] = useState<Soneca[]>([]);
   const [proximoNativo, setProximoNativo] = useState<number | null>(null);
-  const [perm, setPerm] = useState<Permissoes>({ notificacoes: true, exato: true, telaCheia: true });
+  const [perm, setPerm] = useState<Permissoes>({ notificacoes: true, exato: true, telaCheia: true, canalBaixo: false, naoPerturbe: false });
   const ref = useRef<Dados>(VAZIO);
 
   /** Grava, avisa o alarme nativo e atualiza a tela. */
@@ -48,7 +48,14 @@ export function useRemedios() {
   const conferirPermissoes = useCallback(async () => {
     if (!Alarme.ALARME_NATIVO) return;
     const [n, e, t] = await Promise.all([Alarme.notificacoes(), Alarme.alarmeExato(), Alarme.telaCheia()]);
-    setPerm({ notificacoes: n === 'granted', exato: e, telaCheia: t });
+    const st = Alarme.statusPermissoes();
+    setPerm({
+      notificacoes: n === 'granted',
+      exato: e,
+      telaCheia: st ? st.telaCheia : t,
+      canalBaixo: st ? st.canalBaixo : false,
+      naoPerturbe: st ? st.naoPerturbeLigado : false,
+    });
   }, []);
 
   useEffect(() => {
@@ -109,6 +116,8 @@ export function useRemedios() {
     pronto, agora, remedios: dados.remedios, hoje, tocando, proximo, nomesProximo, perm,
     nativo: Alarme.ALARME_NATIVO,
     salvarRemedio, excluir, marcar, responderAlarme, pedirPermissoes,
+    abrirTelaCheia: Alarme.abrirTelaCheia,
+    abrirCanal: Alarme.abrirCanal,
     testar: () => Alarme.testar(60),
     confirmar: Alarme.confirmar,
   };

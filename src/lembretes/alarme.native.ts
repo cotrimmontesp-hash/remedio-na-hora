@@ -5,7 +5,7 @@ import { Alert, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { Nativo } from './alarmeNativo';
 import { lerEventos } from '../logica/agenda';
-import type { DoseTocando, Evento, Remedio, Soneca } from '../tipos';
+import type { DoseTocando, Evento, Remedio, Soneca, StatusPermissoes } from '../tipos';
 
 export type Perm = 'granted' | 'denied' | 'default' | 'indisponivel';
 export const ALARME_NATIVO = Platform.OS === 'android' && !!Nativo;
@@ -94,6 +94,30 @@ export function pedirTelaCheia(): Promise<boolean> {
       { cancelable: true, onDismiss: () => fim(false) },
     );
   }));
+}
+/** O que pode impedir o alarme de acender a tela: tela cheia (Android 14+), canal reduzido, Não perturbe. */
+export function statusPermissoes(): StatusPermissoes | null {
+  if (!ALARME_NATIVO || !Nativo) return null;
+  try {
+    const o = JSON.parse(Nativo.statusPermissoes()) as Partial<StatusPermissoes>;
+    return {
+      telaCheia: o.telaCheia !== false,
+      notificacoes: o.notificacoes !== false,
+      canal: typeof o.canal === 'number' ? o.canal : -1,
+      canalBaixo: o.canalBaixo === true,
+      naoPerturbeLigado: o.naoPerturbeLigado === true,
+    };
+  } catch { return null; }
+}
+/** Abre direto "Permitir tela cheia" (Ajustes > acesso especial) deste app. */
+export function abrirTelaCheia(): void {
+  if (!ALARME_NATIVO || !Nativo) return;
+  try { Nativo.pedirTelaCheia(); } catch { /* nada */ }
+}
+/** Abre os ajustes do canal "Alarme do remédio". */
+export function abrirCanal(): void {
+  if (!ALARME_NATIVO || !Nativo) return;
+  try { Nativo.abrirCanal(); } catch { /* nada */ }
 }
 /** Alarme de teste daqui a `segundos`. Devolve o horário ou null. */
 export async function testar(segundos: number): Promise<number | null> {

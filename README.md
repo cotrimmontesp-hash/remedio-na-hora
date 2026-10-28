@@ -37,4 +37,6 @@ modules/remedio-alarme/               módulo nativo Android (Java/Kotlin), entr
 - `AlarmeActivity.java`: tela cheia sobre a tela bloqueada com nome + observação de cada remédio.
 - `ReceptorBoot.java`: reagenda depois de reiniciar, atualizar o app ou mudar a hora.
 - Permissões que o app pede: notificações, "Alarmes e lembretes" e (Android 14+) tela cheia. Tire o app da economia de bateria. O alarme usa o **volume de alarme**.
+- **Se o alarme toca mas a tela não acende (Android 14+):** falta o acesso especial de tela cheia. Na tela inicial do app toque em **"Permitir tela cheia"** e ative para o Remédio na Hora. Caminho manual no Samsung (One UI; pode variar por modelo/versão): **Configurações > Aplicativos > Acesso especial (⋮ no canto) > Notificações em tela cheia** (ou "Gerenciar intents de tela cheia") **> Remédio na Hora > Permitir**. Se não achar, busque "tela cheia" nas Configurações.
+- O app também avisa se a notificação "Alarme do remédio" estiver com prioridade reduzida (botão "Abrir ajustes do alarme") e se o "Não perturbe" estiver ligado.
 - Celular desligado não toca. Se forçar a parada do app, o Android apaga os alarmes até abrir o app de novo.

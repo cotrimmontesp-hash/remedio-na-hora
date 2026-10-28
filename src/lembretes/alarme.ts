@@ -1,5 +1,5 @@
 // Web (Vercel): NÃO existe alarme nativo no navegador. Cadastro e histórico funcionam (localStorage) só para testar.
-import type { DoseTocando, Evento, Remedio, Soneca } from '../tipos';
+import type { DoseTocando, Evento, Remedio, Soneca, StatusPermissoes } from '../tipos';
 
 export type Perm = 'granted' | 'denied' | 'default' | 'indisponivel';
 export const ALARME_NATIVO = false;
@@ -16,6 +16,9 @@ export async function alarmeExato(): Promise<boolean> { return true; }
 export async function pedirAlarmeExato(): Promise<boolean> { return true; }
 export async function telaCheia(): Promise<boolean> { return true; }
 export async function pedirTelaCheia(): Promise<boolean> { return true; }
+export function statusPermissoes(): StatusPermissoes | null { return null; }
+export function abrirTelaCheia(): void { /* nada na web */ }
+export function abrirCanal(): void { /* nada na web */ }
 export async function testar(_s: number): Promise<number | null> { return null; }
 export function confirmar(titulo: string, texto: string, _sim: string): Promise<boolean> {
   return Promise.resolve(typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(`${titulo}\n\n${texto}`) : true);

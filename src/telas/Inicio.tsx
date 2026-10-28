@@ -18,7 +18,7 @@ export default function Inicio() {
   const [form, setForm] = useState<{ aberto: boolean; r: Remedio | null; n: number }>({ aberto: false, r: null, n: 0 });
   const [msg, setMsg] = useState('');
   const abrir = (r: Remedio | null) => setForm((f) => ({ aberto: true, r, n: f.n + 1 }));
-  const faltaPerm = app.nativo && (!app.perm.notificacoes || !app.perm.exato || !app.perm.telaCheia);
+  const faltaPerm = app.nativo && (!app.perm.notificacoes || !app.perm.exato);
 
   const excluir = async (r: Remedio) => {
     if (await app.confirmar('Excluir remédio?', `"${r.nome}" e seus horários saem da lista e o alarme dele para.`, 'Excluir')) app.excluir(r.id);
@@ -51,8 +51,28 @@ export default function Inicio() {
 
       {faltaPerm && (
         <Pressable style={[s.cartao, { borderColor: cor.vermelho }]} onPress={app.pedirPermissoes}>
-          <Text style={[s.avisoTxt, { color: cor.vermelho }]}>⚠️ Falta permissão para o alarme tocar na hora{!app.perm.telaCheia ? ' e abrir em tela cheia' : ''}. Toque aqui para permitir.</Text>
+          <Text style={[s.avisoTxt, { color: cor.vermelho }]}>⚠️ Falta permissão para o alarme tocar na hora. Toque aqui para permitir.</Text>
         </Pressable>
+      )}
+
+      {app.nativo && !app.perm.telaCheia && (
+        <View style={[s.cartao, { borderColor: cor.vermelho }]}>
+          <Text style={[s.avisoTxt, { color: cor.vermelho }]}>⚠️ A tela cheia está bloqueada: o alarme toca, mas a tela NÃO acende. Toque no botão e ative "Permitir" para o Remédio na Hora.</Text>
+          <Pressable style={s.botao} onPress={app.abrirTelaCheia} accessibilityRole="button"><Text style={s.botaoTxt}>Permitir tela cheia</Text></Pressable>
+        </View>
+      )}
+
+      {app.nativo && app.perm.canalBaixo && (
+        <View style={[s.cartao, { borderColor: cor.amarelo }]}>
+          <Text style={[s.avisoTxt, { color: cor.amarelo }]}>⚠️ A notificação "Alarme do remédio" está com prioridade reduzida ou desligada. Assim o alarme pode não aparecer. Ative a notificação e deixe em "Alertar"/pop-up.</Text>
+          <Pressable style={[s.botao, s.botaoSec]} onPress={app.abrirCanal} accessibilityRole="button"><Text style={[s.botaoTxt, { color: cor.texto }]}>Abrir ajustes do alarme</Text></Pressable>
+        </View>
+      )}
+
+      {app.nativo && app.perm.naoPerturbe && (
+        <View style={[s.cartao, { borderColor: cor.amarelo }]}>
+          <Text style={[s.avisoTxt, { color: cor.amarelo }]}>🌙 O "Não perturbe" está ligado. Ele pode impedir o alarme de acender a tela. Desligue ou deixe os alarmes permitidos no "Não perturbe".</Text>
+        </View>
       )}
 
       {app.remedios.length > 0 && (

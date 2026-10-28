@@ -36,4 +36,20 @@ export interface ModuloAlarme {
   proximo(): number;
   telaCheiaPermitida(): boolean;
   pedirTelaCheia(): boolean;
+  /** JSON de StatusPermissoes (Android). */
+  statusPermissoes(): string;
+  abrirCanal(): boolean;
+}
+
+/** O que pode impedir o alarme de acender a tela (Android). */
+export interface StatusPermissoes {
+  /** Android 14+: acesso especial "tela cheia" liberado. */
+  telaCheia: boolean;
+  notificacoes: boolean;
+  /** Importância do canal do alarme (-1 = desconhecida). */
+  canal: number;
+  /** Canal do alarme com importância reduzida/desligado pelo usuário. */
+  canalBaixo: boolean;
+  /** Não perturbe ligado (o alarme pode não aparecer). */
+  naoPerturbeLigado: boolean;
 }
