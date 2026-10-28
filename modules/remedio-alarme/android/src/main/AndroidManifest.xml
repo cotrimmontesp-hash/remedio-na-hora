@@ -1,0 +1,44 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Alarme de remédio: toca em loop até a resposta, abre sobre a tela bloqueada. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application>
+    <activity
+      android:name="br.com.minanoideias.remedioalarme.AlarmeActivity"
+      android:exported="false"
+      android:showWhenLocked="true"
+      android:turnScreenOn="true"
+      android:launchMode="singleInstance"
+      android:excludeFromRecents="true"
+      android:taskAffinity="br.com.minanoideias.remedionahora.alarme"
+      android:screenOrientation="portrait"
+      android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+
+    <service
+      android:name="br.com.minanoideias.remedioalarme.AlarmeServico"
+      android:exported="false"
+      android:foregroundServiceType="mediaPlayback" />
+
+    <!-- interno: alarme do AlarmManager e botões da notificação -->
+    <receiver android:name="br.com.minanoideias.remedioalarme.Receptor" android:exported="false" />
+
+    <!-- do sistema: depois de reiniciar, atualizar o app ou mudar a hora, agenda de novo -->
+    <receiver android:name="br.com.minanoideias.remedioalarme.ReceptorBoot" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+        <action android:name="android.intent.action.TIME_SET" />
+        <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+        <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+      </intent-filter>
+    </receiver>
+  </application>
+</manifest>
